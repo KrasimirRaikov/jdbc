@@ -106,24 +106,29 @@ public class PersistentUserRepository {
     }
 
     public boolean tableExists(String tableName) throws SQLException {
-        String tableExists = "select exists ( select 1 from information_schema.tables" +
+        String tableExistsQuery = "select exists ( select 1 from information_schema.tables" +
                 " where table_name = ?);";
-        PreparedStatement preparedStatement = connection.prepareStatement(tableExists);
+        PreparedStatement preparedStatement = connection.prepareStatement(tableExistsQuery);
         preparedStatement.setString(1, tableName);
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
-        return resultSet.getBoolean(1);
+        boolean tableExists = resultSet.getBoolean(1);
+        preparedStatement.close();
+        resultSet.close();
+        return tableExists;
     }
 
     public void destroyTable(String tableName) throws SQLException {
         String dropTable = String.format("DROP TABLE IF EXISTS %s ;", tableName);
         Statement statement = connection.createStatement();
         statement.execute(dropTable);
+        statement.close();
     }
 
     public void createRepository() throws SQLException {
         String createUserTable  = "CREATE TABLE users(id int not null, name text not null, surname text, egn text, age integer);";
         Statement statement = connection.createStatement();
         statement.execute(createUserTable);
+        statement.close();
     }
 }
