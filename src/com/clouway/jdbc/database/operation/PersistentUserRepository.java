@@ -114,4 +114,16 @@ public class PersistentUserRepository {
         resultSet.next();
         return resultSet.getBoolean(1);
     }
+
+    public void destroyTable(String tableName) throws SQLException {
+        String dropTable = String.format("DROP TABLE IF EXISTS %s ;", tableName);
+        Statement statement = connection.createStatement();
+        statement.execute(dropTable);
+    }
+
+    public void createRepository() throws SQLException {
+        String createUserTable  = "CREATE TABLE users(id int not null, name text not null, surname text, egn text, age integer);";
+        Statement statement = connection.createStatement();
+        statement.execute(createUserTable);
+    }
 }

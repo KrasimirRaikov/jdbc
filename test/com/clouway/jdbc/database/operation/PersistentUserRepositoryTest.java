@@ -108,4 +108,12 @@ public class PersistentUserRepositoryTest {
         assertThat(returnedOldName, is(equalTo(true)));
     }
 
+    @Test
+    public void destroyTable() throws SQLException {
+        userRepository.destroyTable("users");
+        boolean tableDestroyed = !userRepository.tableExists("users");
+        userRepository.createRepository();
+        assertThat(tableDestroyed, is(equalTo(true)));
+    }
+
 }
