@@ -4,11 +4,11 @@ package com.clouway.jdbc.database.operation;
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)
  */
 public class User {
-    private int id;
-    private String name;
-    private String surname;
-    private final String egn;
-    private int age;
+    public final int id;
+    public final String name;
+    public final String surname;
+    public final String egn;
+    public final int age;
 
     public User(int id, String name, String surname, String egn, int age) {
         this.id = id;
@@ -16,26 +16,6 @@ public class User {
         this.surname = surname;
         this.egn = egn;
         this.age = age;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public String getEgn() {
-        return egn;
-    }
-    
-    public int getAge() {
-        return age;
     }
 
     @Override
@@ -72,9 +52,5 @@ public class User {
         result = 31 * result + (egn != null ? egn.hashCode() : 0);
         result = 31 * result + age;
         return result;
-    }
-
-    public void changeSurname(String topoli) {
-        surname = topoli;
     }
 }

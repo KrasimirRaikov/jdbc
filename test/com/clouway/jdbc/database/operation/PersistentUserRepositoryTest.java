@@ -57,9 +57,9 @@ public class PersistentUserRepositoryTest {
 
     @Test
     public void selectByEgn() throws SQLException {
-        User mark = new User(1, "Mark", "Zukerberg", "1234 or", 30);
+        User mark = new User(1, "Mark", "Zukerberg", "1234", 30);
         userRepository.registerUser(mark);
-        User markReturned = userRepository.getByEgn("1234 or");
+        User markReturned = userRepository.getByEgn("1234");
         assertThat(markReturned, is(equalTo(mark)));
     }
 
@@ -68,16 +68,15 @@ public class PersistentUserRepositoryTest {
         User lucia = new User(1, "Lucia", "Kalucio", "324589", 25);
         userRepository.registerUser(lucia);
         String newSurname = "Topoli";
-        lucia.changeSurname(newSurname);
-        userRepository.updateUser(lucia);
+        User updatedLucia = new User(lucia.id, lucia.name, newSurname, lucia.egn, lucia.age);
+        userRepository.updateUser(updatedLucia);
         User luciaReturned = userRepository.getUser(1);
-        assertThat(luciaReturned.getSurname(), is(equalTo(newSurname)));
+        assertThat(luciaReturned.surname, is(equalTo(newSurname)));
     }
 
     @Test(expected = NoSuchElementException.class)
     public void deleteUser() throws SQLException {
         User john = new User(1, "John", "Selivan", "9012122440", 26);
-
         userRepository.registerUser(john);
         userRepository.deleteUser(1);
 
