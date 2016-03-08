@@ -33,9 +33,7 @@ public class User {
     public String getEgn() {
         return egn;
     }
-
-
-
+    
     public int getAge() {
         return age;
     }
@@ -77,6 +75,6 @@ public class User {
     }
 
     public void changeSurname(String topoli) {
-        surname=topoli;
+        surname = topoli;
     }
 }

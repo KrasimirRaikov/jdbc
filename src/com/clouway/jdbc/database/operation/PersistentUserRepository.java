@@ -1,6 +1,7 @@
 package com.clouway.jdbc.database.operation;
 
 import java.sql.*;
+import java.util.NoSuchElementException;
 
 /**
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)
@@ -17,19 +18,17 @@ public class PersistentUserRepository {
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = connection.prepareStatement(sqlStatement);
+            preparedStatement.setInt(1, user.getId());
+            preparedStatement.setString(2, user.getName());
+            preparedStatement.setString(3, user.getSurname());
+            preparedStatement.setString(4, user.getEgn());
+            preparedStatement.setInt(5, user.getAge());
+            preparedStatement.execute();
 
-
-        preparedStatement.setInt(1, user.getId());
-        preparedStatement.setString(2, user.getName());
-        preparedStatement.setString(3, user.getSurname());
-        preparedStatement.setString(4, user.getEgn());
-        preparedStatement.setInt(5, user.getAge());
-
-        preparedStatement.execute();
-        preparedStatement.close();
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public User getUser(int id) throws SQLException {
@@ -38,7 +37,7 @@ public class PersistentUserRepository {
         preparedStatement.setInt(1, id);
         preparedStatement.execute();
         ResultSet resultSet = preparedStatement.executeQuery();
-        if(resultSet.next()) {
+        if (resultSet.next()) {
             int userId = resultSet.getInt("id");
             String name = resultSet.getString("name");
             String surname = resultSet.getString("surname");
@@ -47,8 +46,8 @@ public class PersistentUserRepository {
             preparedStatement.close();
             resultSet.close();
             return new User(userId, name, surname, egn, age);
-        }else {
-            return null;
+        } else {
+            throw new NoSuchElementException("No users with such id.");
         }
     }
 
@@ -61,7 +60,7 @@ public class PersistentUserRepository {
 
     public User getByEgn(String egn) throws SQLException {
         String sqlStatement = "Select * from users where egn=?;";
-        PreparedStatement  preparedStatement= connection.prepareStatement(sqlStatement);
+        PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
         preparedStatement.setString(1, egn);
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
@@ -126,7 +125,7 @@ public class PersistentUserRepository {
     }
 
     public void createRepository() throws SQLException {
-        String createUserTable  = "CREATE TABLE users(id int not null, name text not null, surname text, egn text, age integer);";
+        String createUserTable = "CREATE TABLE users(id int not null, name text not null, surname text, egn text, age integer);";
         Statement statement = connection.createStatement();
         statement.execute(createUserTable);
         statement.close();

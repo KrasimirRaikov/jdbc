@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.NoSuchElementException;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -15,8 +16,8 @@ import static org.junit.Assert.assertThat;
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)
  */
 public class PersistentUserRepositoryTest {
-    Connection connection =null;
-    PersistentUserRepository userRepository=null;
+    Connection connection = null;
+    PersistentUserRepository userRepository = null;
 
 
     @Before
@@ -34,10 +35,10 @@ public class PersistentUserRepositoryTest {
 
     @Test
     public void insertUser() throws SQLException {
-        User john= new User(1, "John", "Selivan", "9012122440", 26);
+        User john = new User(1, "John", "Selivan", "9012122440", 26);
 
         userRepository.registerUser(john);
-        User returnedUser= userRepository.getUser(1);
+        User returnedUser = userRepository.getUser(1);
         assertThat(returnedUser, is(equalTo(john)));
     }
 
@@ -66,22 +67,21 @@ public class PersistentUserRepositoryTest {
     public void updateUser() throws SQLException {
         User lucia = new User(1, "Lucia", "Kalucio", "324589", 25);
         userRepository.registerUser(lucia);
-        String newSurname ="Topoli";
+        String newSurname = "Topoli";
         lucia.changeSurname(newSurname);
         userRepository.updateUser(lucia);
         User luciaReturned = userRepository.getUser(1);
         assertThat(luciaReturned.getSurname(), is(equalTo(newSurname)));
     }
 
-    @Test
-    public void deleteUser() throws SQLException{
-        User john= new User(1, "John", "Selivan", "9012122440", 26);
+    @Test(expected = NoSuchElementException.class)
+    public void deleteUser() throws SQLException {
+        User john = new User(1, "John", "Selivan", "9012122440", 26);
 
         userRepository.registerUser(john);
         userRepository.deleteUser(1);
 
-        User returnedUser = userRepository.getUser(1);
-        assertThat(returnedUser, is(equalTo(null)));
+        userRepository.getUser(1);
     }
 
     @Test
