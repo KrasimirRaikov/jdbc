@@ -1,5 +1,7 @@
-package com.clouway.jdbc.database.operation;
+package com.clouway.jdbc.database.operation.persistence;
 
+import com.clouway.jdbc.database.operation.ConnectionManager;
+import com.clouway.jdbc.database.operation.User;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,8 +39,8 @@ public class PersistentUserRepositoryTest {
     public void insertUser() throws SQLException {
         User john = new User(1, "John", "Selivan", "9012122440", 26);
 
-        userRepository.registerUser(john);
-        User returnedUser = userRepository.getUser(1);
+        userRepository.register(john);
+        User returnedUser = userRepository.findById(1);
         assertThat(returnedUser, is(equalTo(john)));
     }
 
@@ -47,10 +49,10 @@ public class PersistentUserRepositoryTest {
         User mark = new User(1, "Mark", "Zukerberg", "1234", 30);
         User willy = new User(2, "Willy", "Ban", "763", 31);
 
-        userRepository.registerUser(mark);
-        userRepository.registerUser(willy);
-        User markReturned = userRepository.getUser(1);
-        User willyReturned = userRepository.getUser(2);
+        userRepository.register(mark);
+        userRepository.register(willy);
+        User markReturned = userRepository.findById(1);
+        User willyReturned = userRepository.findById(2);
         assertThat(markReturned, is(equalTo(mark)));
         assertThat(willyReturned, is(equalTo(willy)));
     }
@@ -58,61 +60,29 @@ public class PersistentUserRepositoryTest {
     @Test
     public void selectByEgn() throws SQLException {
         User mark = new User(1, "Mark", "Zukerberg", "1234", 30);
-        userRepository.registerUser(mark);
-        User markReturned = userRepository.getByEgn("1234");
+        userRepository.register(mark);
+        User markReturned = userRepository.findByEgn("1234");
         assertThat(markReturned, is(equalTo(mark)));
     }
 
     @Test
     public void updateUser() throws SQLException {
         User lucia = new User(1, "Lucia", "Kalucio", "324589", 25);
-        userRepository.registerUser(lucia);
+        userRepository.register(lucia);
         String newSurname = "Topoli";
         User updatedLucia = new User(lucia.id, lucia.name, newSurname, lucia.egn, lucia.age);
         userRepository.updateUser(updatedLucia);
-        User luciaReturned = userRepository.getUser(1);
+        User luciaReturned = userRepository.findById(1);
         assertThat(luciaReturned.surname, is(equalTo(newSurname)));
     }
 
     @Test(expected = NoSuchElementException.class)
     public void deleteUser() throws SQLException {
         User john = new User(1, "John", "Selivan", "9012122440", 26);
-        userRepository.registerUser(john);
+        userRepository.register(john);
         userRepository.deleteUser(1);
 
-        userRepository.getUser(1);
-    }
-
-    @Test
-    public void tableExists() throws SQLException {
-        boolean usersTableExists = userRepository.tableExists("users");
-        assertThat(usersTableExists, is(equalTo(true)));
-    }
-
-    @Test
-    public void tableDoesNotExists() throws SQLException {
-        boolean clientsDosntExist = userRepository.tableExists("clients");
-        assertThat(clientsDosntExist, is(equalTo(false)));
-    }
-
-    @Test
-    public void renameTable() throws SQLException {
-        userRepository.renameTable("users", "renamed_users");
-        boolean renamed = userRepository.tableExists("renamed_users");
-
-        userRepository.renameTable("renamed_users", "users");
-        boolean returnedOldName = userRepository.tableExists("users");
-
-        assertThat(renamed, is(equalTo(true)));
-        assertThat(returnedOldName, is(equalTo(true)));
-    }
-
-    @Test
-    public void destroyTable() throws SQLException {
-        userRepository.destroyTable("users");
-        boolean tableDestroyed = !userRepository.tableExists("users");
-        userRepository.createRepository();
-        assertThat(tableDestroyed, is(equalTo(true)));
+        userRepository.findById(1);
     }
 
 }

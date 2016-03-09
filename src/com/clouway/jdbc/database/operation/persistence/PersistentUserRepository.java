@@ -1,4 +1,6 @@
-package com.clouway.jdbc.database.operation;
+package com.clouway.jdbc.database.operation.persistence;
+
+import com.clouway.jdbc.database.operation.User;
 
 import java.sql.*;
 import java.util.NoSuchElementException;
@@ -13,7 +15,7 @@ public class PersistentUserRepository {
         this.connection = connection;
     }
 
-    public void registerUser(User user) {
+    public void register(User user) {
         String sqlStatement = "INSERT INTO users VALUES(?, ?, ?, ?, ?);";
         PreparedStatement preparedStatement = null;
         try {
@@ -31,7 +33,7 @@ public class PersistentUserRepository {
         }
     }
 
-    public User getUser(int id) throws SQLException {
+    public User findById(int id) throws SQLException {
         String selectById = "SELECT * FROM users WHERE id=?;";
         PreparedStatement preparedStatement = connection.prepareStatement(selectById);
         preparedStatement.setInt(1, id);
@@ -58,7 +60,7 @@ public class PersistentUserRepository {
         statement.close();
     }
 
-    public User getByEgn(String egn) throws SQLException {
+    public User findByEgn(String egn) throws SQLException {
         String sqlStatement = "SELECT * FROM users WHERE egn=?;";
         PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
         preparedStatement.setString(1, egn);
@@ -97,37 +99,4 @@ public class PersistentUserRepository {
         preparedStatement.close();
     }
 
-
-    public void renameTable(String tableName, String newTableName) throws SQLException {
-        Statement statement = connection.createStatement();
-        statement.execute("ALTER TABLE " + tableName + " RENAME TO  " + newTableName + ";");
-        statement.close();
-    }
-
-    public boolean tableExists(String tableName) throws SQLException {
-        String tableExistsQuery = "SELECT exists ( SELECT 1 FROM information_schema.tables" +
-                " WHERE table_name = ?);";
-        PreparedStatement preparedStatement = connection.prepareStatement(tableExistsQuery);
-        preparedStatement.setString(1, tableName);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        resultSet.next();
-        boolean tableExists = resultSet.getBoolean(1);
-        preparedStatement.close();
-        resultSet.close();
-        return tableExists;
-    }
-
-    public void destroyTable(String tableName) throws SQLException {
-        String dropTable = String.format("DROP TABLE IF EXISTS %s ;", tableName);
-        Statement statement = connection.createStatement();
-        statement.execute(dropTable);
-        statement.close();
-    }
-
-    public void createRepository() throws SQLException {
-        String createUserTable = "CREATE TABLE users(id INT NOT NULL, name TEXT NOT NULL, surname TEXT, egn TEXT, age INTEGER);";
-        Statement statement = connection.createStatement();
-        statement.execute(createUserTable);
-        statement.close();
-    }
 }
