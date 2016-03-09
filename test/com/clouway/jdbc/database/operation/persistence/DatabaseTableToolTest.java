@@ -1,7 +1,5 @@
 package com.clouway.jdbc.database.operation.persistence;
 
-import com.clouway.jdbc.database.operation.ConnectionManager;
-import com.clouway.jdbc.database.operation.UserRepositoryManager;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,36 +13,36 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)
  */
-public class UserRepositoryManagerTest {
+public class DatabaseTableToolTest {
     Connection connection = null;
-    UserRepositoryManager repositoryManager = null;
+    DatabaseTableTool tableTool = null;
 
     @Before
     public void setUp() throws Exception {
         ConnectionManager connectionManager = new ConnectionManager();
         connection = connectionManager.getConnection("users", "postgres", "clouway.com");
-        repositoryManager = new UserRepositoryManager(connection);
+        tableTool = new DatabaseTableTool(connection);
     }
 
     @Test
     public void tableExists() throws SQLException {
-        boolean usersTableExists = repositoryManager.tableExists("users");
+        boolean usersTableExists = tableTool.exists("users");
         assertThat(usersTableExists, is(equalTo(true)));
     }
 
     @Test
     public void tableDoesNotExists() throws SQLException {
-        boolean clientsDosntExist = repositoryManager.tableExists("clients");
-        assertThat(clientsDosntExist, is(equalTo(false)));
+        boolean clientsDoesNotExist = tableTool.exists("clients");
+        assertThat(clientsDoesNotExist, is(equalTo(false)));
     }
 
     @Test
     public void renameTable() throws SQLException {
-        repositoryManager.renameTable("users", "renamed_users");
-        boolean renamed = repositoryManager.tableExists("renamed_users");
+        tableTool.renameTable("users", "renamed_users");
+        boolean renamed = tableTool.exists("renamed_users");
 
-        repositoryManager.renameTable("renamed_users", "users");
-        boolean returnedOldName = repositoryManager.tableExists("users");
+        tableTool.renameTable("renamed_users", "users");
+        boolean returnedOldName = tableTool.exists("users");
 
         assertThat(renamed, is(equalTo(true)));
         assertThat(returnedOldName, is(equalTo(true)));
@@ -52,9 +50,10 @@ public class UserRepositoryManagerTest {
 
     @Test
     public void destroyTable() throws SQLException {
-        repositoryManager.destroyTable("users");
-        boolean tableDestroyed = !repositoryManager.tableExists("users");
-        repositoryManager.createRepository();
+        tableTool.destroy("users");
+        boolean tableDestroyed = !tableTool.exists("users");
+        tableTool.create("users(id INT NOT NULL, name TEXT NOT NULL, surname TEXT, egn TEXT, age INTEGER)");
         assertThat(tableDestroyed, is(equalTo(true)));
     }
+
 }

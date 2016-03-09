@@ -1,8 +1,9 @@
-package com.clouway.jdbc.database.operation.persistence;
+package com.clouway.jdbc.database.operation.persistence.user;
 
-import com.clouway.jdbc.database.operation.User;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.NoSuchElementException;
 
 /**
@@ -20,10 +21,10 @@ public class PersistentUserRepository {
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = connection.prepareStatement(sqlStatement);
-            preparedStatement.setInt(1, user.id);
+            preparedStatement.setInt(1, user.id.value);
             preparedStatement.setString(2, user.name);
             preparedStatement.setString(3, user.surname);
-            preparedStatement.setString(4, user.egn);
+            preparedStatement.setString(4, user.egn.value);
             preparedStatement.setInt(5, user.age);
             preparedStatement.execute();
 
@@ -33,10 +34,10 @@ public class PersistentUserRepository {
         }
     }
 
-    public User findById(int id) throws SQLException {
+    public User findBy(ID id) throws SQLException {
         String selectById = "SELECT * FROM users WHERE id=?;";
         PreparedStatement preparedStatement = connection.prepareStatement(selectById);
-        preparedStatement.setInt(1, id);
+        preparedStatement.setInt(1, id.value);
         preparedStatement.execute();
         ResultSet resultSet = preparedStatement.executeQuery();
         if (resultSet.next()) {
@@ -47,23 +48,16 @@ public class PersistentUserRepository {
             int age = resultSet.getInt("age");
             preparedStatement.close();
             resultSet.close();
-            return new User(userId, name, surname, egn, age);
+            return new User(new ID(userId), name, surname, new EGN(egn), age);
         } else {
             throw new NoSuchElementException("No users with such id.");
         }
     }
 
-    public void clear() throws SQLException {
-        Statement statement = connection.createStatement();
-
-        statement.execute("TRUNCATE TABLE users;");
-        statement.close();
-    }
-
-    public User findByEgn(String egn) throws SQLException {
+    public User findBy(EGN egn) throws SQLException {
         String sqlStatement = "SELECT * FROM users WHERE egn=?;";
         PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
-        preparedStatement.setString(1, egn);
+        preparedStatement.setString(1, egn.value);
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.next();
         int userId = resultSet.getInt("id");
@@ -74,26 +68,26 @@ public class PersistentUserRepository {
         preparedStatement.close();
         resultSet.close();
 
-        return new User(userId, name, surname, egnReturned, age);
+        return new User(new ID(userId), name, surname, new EGN(egnReturned), age);
     }
 
-    public void updateUser(User user) throws SQLException {
+    public void update(User user) throws SQLException {
         String sqlStatement = "UPDATE users SET name=?, surname=?, egn=?, age=? WHERE id=?";
         PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
         preparedStatement.setString(1, user.name);
         preparedStatement.setString(2, user.surname);
-        preparedStatement.setString(3, user.egn);
+        preparedStatement.setString(3, user.egn.value);
         preparedStatement.setInt(4, user.age);
-        preparedStatement.setInt(5, user.id);
+        preparedStatement.setInt(5, user.id.value);
 
         preparedStatement.execute();
         preparedStatement.close();
     }
 
-    public void deleteUser(int id) throws SQLException {
+    public void delete(ID id) throws SQLException {
         String deleteById = "DELETE FROM users WHERE id=?;";
         PreparedStatement preparedStatement = connection.prepareStatement(deleteById);
-        preparedStatement.setInt(1, id);
+        preparedStatement.setInt(1, id.value);
 
         preparedStatement.execute();
         preparedStatement.close();

@@ -1,4 +1,4 @@
-package com.clouway.jdbc.database.operation;
+package com.clouway.jdbc.database.operation.persistence;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

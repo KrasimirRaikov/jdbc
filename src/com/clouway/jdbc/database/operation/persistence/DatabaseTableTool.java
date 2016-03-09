@@ -1,19 +1,19 @@
-package com.clouway.jdbc.database.operation;
+package com.clouway.jdbc.database.operation.persistence;
 
 import java.sql.*;
 
 /**
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)
  */
-public class UserRepositoryManager {
+public class DatabaseTableTool {
 
     private Connection connection;
 
-    public UserRepositoryManager(Connection connection) {
+    public DatabaseTableTool(Connection connection) {
         this.connection = connection;
     }
 
-    public boolean tableExists(String tableName) throws SQLException {
+    public boolean exists(String tableName) throws SQLException {
         String tableExistsQuery = "SELECT exists ( SELECT 1 FROM information_schema.tables" +
                 " WHERE table_name = ?);";
         PreparedStatement preparedStatement = connection.prepareStatement(tableExistsQuery);
@@ -26,15 +26,15 @@ public class UserRepositoryManager {
         return tableExists;
     }
 
-    public void destroyTable(String tableName) throws SQLException {
+    public void destroy(String tableName) throws SQLException {
         String dropTable = String.format("DROP TABLE IF EXISTS %s ;", tableName);
         Statement statement = connection.createStatement();
         statement.execute(dropTable);
         statement.close();
     }
 
-    public void createRepository() throws SQLException {
-        String createUserTable = "CREATE TABLE users(id INT NOT NULL, name TEXT NOT NULL, surname TEXT, egn TEXT, age INTEGER);";
+    public void create(String tableStructure) throws SQLException {
+        String createUserTable = "CREATE TABLE " + tableStructure + ";";
         Statement statement = connection.createStatement();
         statement.execute(createUserTable);
         statement.close();
