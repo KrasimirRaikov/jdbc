@@ -67,7 +67,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test
-    public void selectByEgn() throws SQLException {
+    public void findByEgn() throws SQLException {
         ID markID = new ID(1);
         EGN markEgn = new EGN("1234");
         User mark = new User(markID, "Mark", "Zukerberg", markEgn, 30);
