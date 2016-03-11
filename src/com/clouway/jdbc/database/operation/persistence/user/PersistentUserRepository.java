@@ -1,21 +1,23 @@
 package com.clouway.jdbc.database.operation.persistence.user;
 
+import com.clouway.jdbc.database.operation.persistence.ExecutionException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.NoSuchElementException;
 
 /**
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)
  */
-public class PersistentUserRepository {
+public class PersistentUserRepository implements UserRepository {
     Connection connection;
 
     public PersistentUserRepository(Connection connection) {
         this.connection = connection;
     }
 
+    @Override
     public void register(User user) {
         String sqlStatement = "INSERT INTO users VALUES(?, ?, ?, ?, ?);";
         PreparedStatement preparedStatement = null;
@@ -28,69 +30,141 @@ public class PersistentUserRepository {
             preparedStatement.setInt(5, user.age);
             preparedStatement.execute();
 
-            preparedStatement.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new ExecutionException("Could not register user with id: " + user.id);
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    public User findBy(ID id) throws SQLException {
+    @Override
+    public User findBy(ID id) {
         String selectById = "SELECT * FROM users WHERE id=?;";
-        PreparedStatement preparedStatement = connection.prepareStatement(selectById);
-        preparedStatement.setInt(1, id.value);
-        preparedStatement.execute();
-        ResultSet resultSet = preparedStatement.executeQuery();
-        if (resultSet.next()) {
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try {
+            preparedStatement = connection.prepareStatement(selectById);
+            preparedStatement.setInt(1, id.value);
+            preparedStatement.execute();
+            resultSet = preparedStatement.executeQuery();
+
+            resultSet.next();
             int userId = resultSet.getInt("id");
             String name = resultSet.getString("name");
             String surname = resultSet.getString("surname");
             String egn = resultSet.getString("egn");
             int age = resultSet.getInt("age");
-            preparedStatement.close();
-            resultSet.close();
             return new User(new ID(userId), name, surname, new EGN(egn), age);
-        } else {
-            throw new NoSuchElementException("No users with such id.");
+        } catch (SQLException e) {
+            throw new ExecutionException("Could not find user with such id: " + id.value);
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-    public User findBy(EGN egn) throws SQLException {
+    @Override
+    public User findBy(EGN egn) {
         String sqlStatement = "SELECT * FROM users WHERE egn=?;";
-        PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
-        preparedStatement.setString(1, egn.value);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        resultSet.next();
-        int userId = resultSet.getInt("id");
-        String name = resultSet.getString("name");
-        String surname = resultSet.getString("surname");
-        String egnReturned = resultSet.getString("egn");
-        int age = resultSet.getInt("age");
-        preparedStatement.close();
-        resultSet.close();
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        try {
+            preparedStatement = connection.prepareStatement(sqlStatement);
+            preparedStatement.setString(1, egn.value);
+            resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            int userId = resultSet.getInt("id");
+            String name = resultSet.getString("name");
+            String surname = resultSet.getString("surname");
+            String egnReturned = resultSet.getString("egn");
+            int age = resultSet.getInt("age");
+            return new User(new ID(userId), name, surname, new EGN(egnReturned), age);
+        } catch (SQLException e) {
+            throw new ExecutionException("No users with such EGN: " + egn.value);
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
-        return new User(new ID(userId), name, surname, new EGN(egnReturned), age);
+
     }
 
-    public void update(User user) throws SQLException {
+    @Override
+    public void update(User user) {
         String sqlStatement = "UPDATE users SET name=?, surname=?, egn=?, age=? WHERE id=?";
-        PreparedStatement preparedStatement = connection.prepareStatement(sqlStatement);
-        preparedStatement.setString(1, user.name);
-        preparedStatement.setString(2, user.surname);
-        preparedStatement.setString(3, user.egn.value);
-        preparedStatement.setInt(4, user.age);
-        preparedStatement.setInt(5, user.id.value);
-
-        preparedStatement.execute();
-        preparedStatement.close();
+        PreparedStatement preparedStatement = null;
+        try {
+            preparedStatement = connection.prepareStatement(sqlStatement);
+            preparedStatement.setString(1, user.name);
+            preparedStatement.setString(2, user.surname);
+            preparedStatement.setString(3, user.egn.value);
+            preparedStatement.setInt(4, user.age);
+            preparedStatement.setInt(5, user.id.value);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            throw new ExecutionException("could not update: " + user.toString());
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
-    public void delete(ID id) throws SQLException {
+    @Override
+    public void delete(ID id) {
         String deleteById = "DELETE FROM users WHERE id=?;";
-        PreparedStatement preparedStatement = connection.prepareStatement(deleteById);
-        preparedStatement.setInt(1, id.value);
+        PreparedStatement preparedStatement = null;
+        try {
+            preparedStatement = connection.prepareStatement(deleteById);
+            preparedStatement.setInt(1, id.value);
 
-        preparedStatement.execute();
-        preparedStatement.close();
+            preparedStatement.execute();
+
+        } catch (SQLException e) {
+            throw new ExecutionException("Could not delete user with id: " + id.value);
+        } finally {
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }

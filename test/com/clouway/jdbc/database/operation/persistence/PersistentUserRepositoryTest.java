@@ -11,7 +11,6 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.NoSuchElementException;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -26,20 +25,19 @@ public class PersistentUserRepositoryTest {
 
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         ConnectionManager connectionManager = new ConnectionManager();
         connection = connectionManager.getConnection("users", "postgres", "clouway.com");
         userRepository = new PersistentUserRepository(connection);
     }
 
     @After
-    public void tearDown() throws SQLException {
+    public void tearDown() {
         clear();
-        connection.close();
     }
 
     @Test
-    public void insertUser() throws SQLException {
+    public void insertUser() {
         ID johnId = new ID(1);
         EGN johnEgn = new EGN("9012122440");
         User john = new User(johnId, "John", "Selivan", johnEgn, 26);
@@ -50,7 +48,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test
-    public void insertTwoUsers() throws SQLException {
+    public void insertTwoUsers() {
         ID markId = new ID(1);
         EGN markEgn = new EGN("1234");
         User mark = new User(markId, "Mark", "Zukerberg", markEgn, 30);
@@ -67,7 +65,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test
-    public void findByEgn() throws SQLException {
+    public void findByEgn() {
         ID markID = new ID(1);
         EGN markEgn = new EGN("1234");
         User mark = new User(markID, "Mark", "Zukerberg", markEgn, 30);
@@ -77,7 +75,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test
-    public void updateUser() throws SQLException {
+    public void updateUser() {
         ID luciaId = new ID(1);
         EGN luciaEgn = new EGN("324589");
         User lucia = new User(luciaId, "Lucia", "Kalucio", luciaEgn, 25);
@@ -89,8 +87,8 @@ public class PersistentUserRepositoryTest {
         assertThat(luciaReturned.surname, is(equalTo(newSurname)));
     }
 
-    @Test(expected = NoSuchElementException.class)
-    public void deleteUser() throws SQLException {
+    @Test(expected = ExecutionException.class)
+    public void deleteUser() {
         ID johnId = new ID(1);
         EGN johnEgn = new EGN("9012122440");
         User john = new User(johnId, "John", "Selivan", johnEgn, 26);
@@ -100,11 +98,24 @@ public class PersistentUserRepositoryTest {
         userRepository.findBy(johnId);
     }
 
-    public void clear() throws SQLException {
-        Statement statement = connection.createStatement();
+    public void clear() {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.execute("TRUNCATE TABLE users;");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                statement.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
 
-        statement.execute("TRUNCATE TABLE users;");
-        statement.close();
+        }
+
+
     }
 
 }
