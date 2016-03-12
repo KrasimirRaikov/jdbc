@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -31,9 +32,10 @@ public class PersistentUserRepositoryTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws SQLException {
         DatabaseTableTool tableTool = new DatabaseTableTool();
         tableTool.clearTable(connection, "users");
+        connection.close();
     }
 
     @Test
