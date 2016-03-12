@@ -1,5 +1,6 @@
 package com.clouway.jdbc.database.operation.persistence;
 
+import com.clouway.jdbc.DatabaseTableTool;
 import com.clouway.jdbc.database.operation.persistence.user.EGN;
 import com.clouway.jdbc.database.operation.persistence.user.ID;
 import com.clouway.jdbc.database.operation.persistence.user.PersistentUserRepository;
@@ -9,8 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -33,7 +32,8 @@ public class PersistentUserRepositoryTest {
 
     @After
     public void tearDown() {
-        clear();
+        DatabaseTableTool tableTool = new DatabaseTableTool();
+        tableTool.clearTable(connection, "users");
     }
 
     @Test
@@ -96,26 +96,6 @@ public class PersistentUserRepositoryTest {
         userRepository.delete(johnId);
 
         userRepository.findBy(johnId);
-    }
-
-    public void clear() {
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
-            statement.execute("TRUNCATE TABLE users;");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                statement.close();
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-
     }
 
 }
