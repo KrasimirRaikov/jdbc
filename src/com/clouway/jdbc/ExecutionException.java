@@ -1,4 +1,4 @@
-package com.clouway.jdbc.database.operation.persistence;
+package com.clouway.jdbc;
 
 /**
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)

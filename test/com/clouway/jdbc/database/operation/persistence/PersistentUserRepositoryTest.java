@@ -1,6 +1,8 @@
 package com.clouway.jdbc.database.operation.persistence;
 
+import com.clouway.jdbc.ConnectionManager;
 import com.clouway.jdbc.DatabaseTableTool;
+import com.clouway.jdbc.ExecutionException;
 import com.clouway.jdbc.database.operation.persistence.user.EGN;
 import com.clouway.jdbc.database.operation.persistence.user.ID;
 import com.clouway.jdbc.database.operation.persistence.user.PersistentUserRepository;

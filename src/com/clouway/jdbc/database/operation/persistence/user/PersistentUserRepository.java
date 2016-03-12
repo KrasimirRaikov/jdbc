@@ -1,6 +1,6 @@
 package com.clouway.jdbc.database.operation.persistence.user;
 
-import com.clouway.jdbc.database.operation.persistence.ExecutionException;
+import com.clouway.jdbc.ExecutionException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
