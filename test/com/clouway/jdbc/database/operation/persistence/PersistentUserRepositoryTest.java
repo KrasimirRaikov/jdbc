@@ -102,4 +102,26 @@ public class PersistentUserRepositoryTest {
         userRepository.findBy(johnId);
     }
 
+    @Test(expected = ExecutionException.class)
+    public void findUnregisteredUserById(){
+        User john = userRepository.findBy(new ID(1));
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void deleteUnregisteredUser(){
+        userRepository.delete(new ID(1));
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void updateUnregisteredUser(){
+        ID jackId = new ID(1);
+        EGN jackEgn = new EGN("5432345");
+        User jack = new User(jackId, "Jack", "Sparrow", jackEgn, 40);
+        userRepository.update(jack);
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void findUnregisteredUserBiEgn(){
+        User john = userRepository.findBy(new EGN("2452445"));
+    }
 }
