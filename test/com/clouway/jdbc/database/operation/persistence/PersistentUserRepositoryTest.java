@@ -41,7 +41,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test
-    public void insertUser() {
+    public void registerUser() {
         ID johnId = new ID(1);
         EGN johnEgn = new EGN("9012122440");
         User john = new User(johnId, "John", "Selivan", johnEgn, 26);
@@ -52,7 +52,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test
-    public void insertTwoUsers() {
+    public void registerAnotherUsers() {
         ID markId = new ID(1);
         EGN markEgn = new EGN("1234");
         User mark = new User(markId, "Mark", "Zukerberg", markEgn, 30);
@@ -68,14 +68,38 @@ public class PersistentUserRepositoryTest {
         assertThat(willyReturned, is(equalTo(willy)));
     }
 
+    @Test(expected = ExecutionException.class)
+    public void registerExistingUser() {
+        ID johnId = new ID(1);
+        User john = new User(johnId, "John", "Selivan", new EGN("456"), 32);
+        userRepository.register(john);
+        User jill = new User(johnId, "Jill", "Patrik", new EGN("34572"), 34);
+        userRepository.register(jill);
+    }
+
     @Test
-    public void findByEgn() {
+    public void findUserByEgn() {
         ID markID = new ID(1);
         EGN markEgn = new EGN("1234");
         User mark = new User(markID, "Mark", "Zukerberg", markEgn, 30);
         userRepository.register(mark);
         User markReturned = userRepository.findBy(markEgn);
         assertThat(markReturned, is(equalTo(mark)));
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void findUnregisteredUserById(){
+        User john = userRepository.findBy(new ID(1));
+    }
+
+    @Test
+    public void findAnotherUserByEgn() {
+    }
+
+
+    @Test(expected = ExecutionException.class)
+    public void findUnregisteredUserByEgn(){
+        User john = userRepository.findBy(new EGN("2452445"));
     }
 
     @Test
@@ -92,6 +116,14 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test(expected = ExecutionException.class)
+    public void updateUnregisteredUser(){
+        ID jackId = new ID(1);
+        EGN jackEgn = new EGN("5432345");
+        User jack = new User(jackId, "Jack", "Sparrow", jackEgn, 40);
+        userRepository.update(jack);
+    }
+
+    @Test(expected = ExecutionException.class)
     public void deleteUser() {
         ID johnId = new ID(1);
         EGN johnEgn = new EGN("9012122440");
@@ -103,45 +135,18 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test(expected = ExecutionException.class)
-    public void findUnregisteredUserById(){
-        User john = userRepository.findBy(new ID(1));
-    }
-
-    @Test(expected = ExecutionException.class)
     public void deleteUnregisteredUser(){
         userRepository.delete(new ID(1));
     }
 
     @Test(expected = ExecutionException.class)
-    public void updateUnregisteredUser(){
-        ID jackId = new ID(1);
-        EGN jackEgn = new EGN("5432345");
-        User jack = new User(jackId, "Jack", "Sparrow", jackEgn, 40);
-        userRepository.update(jack);
-    }
-
-    @Test(expected = ExecutionException.class)
-    public void findUnregisteredUserBiEgn(){
-        User john = userRepository.findBy(new EGN("2452445"));
-    }
-
-    @Test(expected = ExecutionException.class)
-    public void insertUserWithTakenId() {
-        ID johnId = new ID(1);
-        User john = new User(johnId, "John", "Selivan", new EGN("456"), 32);
-        userRepository.register(john);
-        User jill = new User(johnId, "Jill", "Patrik", new EGN("34572"), 34);
-        userRepository.register(jill);
-    }
-
-    @Test(expected = ExecutionException.class)
-    public void insertUserWithNullName() {
+    public void insertUserWithoutName() {
         User petar = new User(new ID(1), null, "Petrov", new EGN("76"), 23);
         userRepository.register(petar);
     }
 
     @Test(expected = ExecutionException.class)
-    public void updateUserWithNullName() {
+    public void updateUserWithoutName() {
         ID nikolasId = new ID(1);
         User nikola = new User(nikolasId, "Nikola", "Nikolov", new EGN("34"), 12);
         userRepository.register(nikola);
