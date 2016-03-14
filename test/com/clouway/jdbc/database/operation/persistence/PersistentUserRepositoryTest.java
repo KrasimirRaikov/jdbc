@@ -124,4 +124,15 @@ public class PersistentUserRepositoryTest {
     public void findUnregisteredUserBiEgn(){
         User john = userRepository.findBy(new EGN("2452445"));
     }
+
+    @Test(expected = ExecutionException.class)
+    public void insertUserWithTakenId() {
+        ID johnId = new ID(1);
+        User john = new User(johnId, "John", "Selivan", new EGN("456"), 32);
+        userRepository.register(john);
+        User jill = new User(johnId, "Jill", "Patrik", new EGN("34572"), 34);
+        userRepository.register(jill);
+    }
+
+    
 }
