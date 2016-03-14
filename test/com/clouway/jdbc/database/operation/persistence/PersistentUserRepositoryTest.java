@@ -134,5 +134,18 @@ public class PersistentUserRepositoryTest {
         userRepository.register(jill);
     }
 
-    
+    @Test(expected = ExecutionException.class)
+    public void insertUserWithNullName() {
+        User petar = new User(new ID(1), null, "Petrov", new EGN("76"), 23);
+        userRepository.register(petar);
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void updateUserWithNullName() {
+        ID nikolasId = new ID(1);
+        User nikola = new User(nikolasId, "Nikola", "Nikolov", new EGN("34"), 12);
+        userRepository.register(nikola);
+        User updatedNikola = new User(nikolasId, null, "Nikolov", new EGN("23"), 25);
+        userRepository.update(updatedNikola);
+    }
 }
