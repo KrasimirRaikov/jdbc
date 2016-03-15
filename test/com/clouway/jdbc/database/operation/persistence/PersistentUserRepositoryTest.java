@@ -42,30 +42,30 @@ public class PersistentUserRepositoryTest {
 
     @Test
     public void insertUser() {
-        ID johnId = new ID(1);
-        EGN johnEgn = new EGN("9012122440");
-        User john = new User(johnId, "John", "Selivan", johnEgn, 26);
+        ID userId = new ID(1);
+        EGN userEgn = new EGN("9012122440");
+        User user = new User(userId, "John", "Selivan", userEgn, 26);
 
-        userRepository.register(john);
-        User returnedUser = userRepository.findBy(johnId);
-        assertThat(returnedUser, is(equalTo(john)));
+        userRepository.register(user);
+        User returnedUser = userRepository.findBy(userId);
+        assertThat(returnedUser, is(equalTo(user)));
     }
 
     @Test
     public void insertAnotherUsers() {
-        ID markId = new ID(1);
-        EGN markEgn = new EGN("1234");
-        User mark = new User(markId, "Mark", "Zukerberg", markEgn, 30);
-        ID willyId = new ID(2);
-        EGN willyEgn = new EGN("763");
-        User willy = new User(willyId, "Willy", "Ban", willyEgn, 31);
+        ID userId = new ID(1);
+        EGN userEgn = new EGN("1234");
+        User user = new User(userId, "Mark", "Zukerberg", userEgn, 30);
+        ID secondUserId = new ID(2);
+        EGN secondUserEgn = new EGN("763");
+        User secondUser = new User(secondUserId, "Willy", "Ban", secondUserEgn, 31);
 
-        userRepository.register(mark);
-        userRepository.register(willy);
-        User markReturned = userRepository.findBy(markId);
-        User willyReturned = userRepository.findBy(willyId);
-        assertThat(markReturned, is(equalTo(mark)));
-        assertThat(willyReturned, is(equalTo(willy)));
+        userRepository.register(user);
+        userRepository.register(secondUser);
+        User userActual = userRepository.findBy(userId);
+        User secondUserActual = userRepository.findBy(secondUserId);
+        assertThat(userActual, is(equalTo(user)));
+        assertThat(secondUserActual, is(equalTo(secondUser)));
     }
 
     @Test(expected = ExecutionException.class)
@@ -97,17 +97,17 @@ public class PersistentUserRepositoryTest {
 
     @Test
     public void findUserByEgn() {
-        ID markID = new ID(1);
-        EGN markEgn = new EGN("1234");
-        User mark = new User(markID, "Mark", "Zukerberg", markEgn, 30);
-        userRepository.register(mark);
-        User markReturned = userRepository.findBy(markEgn);
-        assertThat(markReturned, is(equalTo(mark)));
+        ID userID = new ID(1);
+        EGN userEgn = new EGN("1234");
+        User user = new User(userID, "Mark", "Zukerberg", userEgn, 30);
+        userRepository.register(user);
+        User userReturned = userRepository.findBy(userEgn);
+        assertThat(userReturned, is(equalTo(user)));
     }
 
     @Test(expected = ExecutionException.class)
     public void findUnregisteredUserById() {
-        User john = userRepository.findBy(new ID(1));
+        User user = userRepository.findBy(new ID(1));
     }
 
     @Test
@@ -117,48 +117,64 @@ public class PersistentUserRepositoryTest {
 
     @Test(expected = ExecutionException.class)
     public void findUnregisteredUserByEgn() {
-        User john = userRepository.findBy(new EGN("2452445"));
+        User user = userRepository.findBy(new EGN("2452445"));
     }
 
     @Test
     public void updateUser() {
-        ID luciaId = new ID(1);
-        EGN luciaEgn = new EGN("324589");
-        User lucia = new User(luciaId, "Lucia", "Kalucio", luciaEgn, 25);
-        userRepository.register(lucia);
+        ID userId = new ID(1);
+        EGN userEgn = new EGN("324589");
+        User user = new User(userId, "Lucia", "Kalucio", userEgn, 25);
+        userRepository.register(user);
         String newSurname = "Topoli";
-        User updatedLucia = new User(lucia.id, lucia.name, newSurname, lucia.egn, lucia.age);
-        userRepository.update(updatedLucia);
-        User luciaReturned = userRepository.findBy(luciaId);
-        assertThat(luciaReturned.surname, is(equalTo(newSurname)));
+        User updatedUser = new User(user.id, user.name, newSurname, user.egn, user.age);
+        userRepository.update(updatedUser);
+        User userActual = userRepository.findBy(userId);
+        assertThat(userActual.surname, is(equalTo(newSurname)));
     }
 
     @Test(expected = ExecutionException.class)
     public void updateUnregisteredUser() {
-        ID jackId = new ID(1);
-        EGN jackEgn = new EGN("5432345");
-        User jack = new User(jackId, "Jack", "Sparrow", jackEgn, 40);
-        userRepository.update(jack);
+        ID userId = new ID(1);
+        EGN userEgn = new EGN("5432345");
+        User user = new User(userId, "Jack", "Sparrow", userEgn, 40);
+        userRepository.update(user);
     }
 
     @Test(expected = ExecutionException.class)
     public void updateUserWithoutName() {
-        ID nikolasId = new ID(1);
-        User nikola = new User(nikolasId, "Nikola", "Nikolov", new EGN("34"), 12);
-        userRepository.register(nikola);
-        User updatedNikola = new User(nikolasId, null, "Nikolov", new EGN("23"), 25);
-        userRepository.update(updatedNikola);
+        ID userId = new ID(1);
+        User user = new User(userId, "Nikola", "Nikolov", new EGN("34"), 12);
+        userRepository.register(user);
+        User updatedUser = new User(userId, null, "Nikolov", new EGN("23"), 25);
+        userRepository.update(updatedUser);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void updateUserWithoutId() {
+        User user = new User(new ID(1), "Kala", "Kalchev", new EGN("34"), 23);
+        userRepository.register(user);
+        User updateUser = new User(null, "Kala", "Kalchev", new EGN("45"), 3);
+        userRepository.update(updateUser);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void updateUserWithoutEgn() {
+        User user = new User(new ID(1), "Kala", "Kalchev", new EGN("34"), 23);
+        userRepository.register(user);
+        User updateUser = new User(new ID(1), "Kala", "Kalchev", null, 3);
+        userRepository.update(updateUser);
     }
 
     @Test(expected = ExecutionException.class)
     public void deleteUser() {
-        ID johnId = new ID(1);
-        EGN johnEgn = new EGN("9012122440");
-        User john = new User(johnId, "John", "Selivan", johnEgn, 26);
-        userRepository.register(john);
-        userRepository.delete(johnId);
+        ID userId = new ID(1);
+        EGN userEgn = new EGN("9012122440");
+        User user = new User(userId, "John", "Selivan", userEgn, 26);
+        userRepository.register(user);
+        userRepository.delete(userId);
 
-        userRepository.findBy(johnId);
+        userRepository.findBy(userId);
     }
 
     @Test(expected = ExecutionException.class)
