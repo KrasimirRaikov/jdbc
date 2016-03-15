@@ -5,9 +5,9 @@ package com.clouway.jdbc.database.operation.persistence.user;
  */
 public class ID {
 
-    public final int value;
+    public final long value;
 
-    public ID(int value) {
+    public ID(long value) {
         this.value = value;
     }
 
@@ -24,6 +24,6 @@ public class ID {
 
     @Override
     public int hashCode() {
-        return value;
+        return (int) (value ^ (value >>> 32));
     }
 }

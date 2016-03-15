@@ -23,7 +23,7 @@ public class PersistentUserRepository implements UserRepository {
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = connection.prepareStatement(sqlStatement);
-            preparedStatement.setInt(1, user.id.value);
+            preparedStatement.setLong(1, user.id.value);
             preparedStatement.setString(2, user.name);
             preparedStatement.setString(3, user.surname);
             preparedStatement.setString(4, user.egn.value);
@@ -50,12 +50,12 @@ public class PersistentUserRepository implements UserRepository {
         ResultSet resultSet = null;
         try {
             preparedStatement = connection.prepareStatement(selectById);
-            preparedStatement.setInt(1, id.value);
+            preparedStatement.setLong(1, id.value);
             preparedStatement.execute();
             resultSet = preparedStatement.executeQuery();
 
             resultSet.next();
-            int userId = resultSet.getInt("id");
+            long userId = resultSet.getLong("id");
             String name = resultSet.getString("name");
             String surname = resultSet.getString("surname");
             String egn = resultSet.getString("egn");
@@ -91,7 +91,7 @@ public class PersistentUserRepository implements UserRepository {
             preparedStatement.setString(1, egn.value);
             resultSet = preparedStatement.executeQuery();
             resultSet.next();
-            int userId = resultSet.getInt("id");
+            long userId = resultSet.getLong("id");
             String name = resultSet.getString("name");
             String surname = resultSet.getString("surname");
             String egnReturned = resultSet.getString("egn");
@@ -129,7 +129,7 @@ public class PersistentUserRepository implements UserRepository {
             preparedStatement.setString(2, user.surname);
             preparedStatement.setString(3, user.egn.value);
             preparedStatement.setInt(4, user.age);
-            preparedStatement.setInt(5, user.id.value);
+            preparedStatement.setLong(5, user.id.value);
             if (preparedStatement.executeUpdate() == 0) {
                 throw new ExecutionException("could not update user with id: " + user.id);
             }
@@ -152,7 +152,7 @@ public class PersistentUserRepository implements UserRepository {
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = connection.prepareStatement(deleteById);
-            preparedStatement.setInt(1, id.value);
+            preparedStatement.setLong(1, id.value);
 
             preparedStatement.executeQuery();
         } catch (SQLException e) {
