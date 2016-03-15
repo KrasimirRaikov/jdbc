@@ -130,7 +130,7 @@ public class PersistentUserRepository implements UserRepository {
             preparedStatement.setString(3, user.egn.value);
             preparedStatement.setInt(4, user.age);
             preparedStatement.setInt(5, user.id.value);
-            if(preparedStatement.executeUpdate()==0){
+            if (preparedStatement.executeUpdate() == 0) {
                 throw new ExecutionException("could not update user with id: " + user.id);
             }
         } catch (SQLException e) {

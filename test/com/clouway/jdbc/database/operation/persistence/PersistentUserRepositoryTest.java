@@ -41,7 +41,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test
-    public void registerUser() {
+    public void insertUser() {
         ID johnId = new ID(1);
         EGN johnEgn = new EGN("9012122440");
         User john = new User(johnId, "John", "Selivan", johnEgn, 26);
@@ -52,7 +52,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test
-    public void registerAnotherUsers() {
+    public void insertAnotherUsers() {
         ID markId = new ID(1);
         EGN markEgn = new EGN("1234");
         User mark = new User(markId, "Mark", "Zukerberg", markEgn, 30);
@@ -69,12 +69,30 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test(expected = ExecutionException.class)
-    public void registerExistingUser() {
-        ID johnId = new ID(1);
-        User john = new User(johnId, "John", "Selivan", new EGN("456"), 32);
-        userRepository.register(john);
-        User jill = new User(johnId, "Jill", "Patrik", new EGN("34572"), 34);
-        userRepository.register(jill);
+    public void insertExistingUser() {
+        ID userID = new ID(1);
+        User user = new User(userID, "John", "Selivan", new EGN("456"), 32);
+        userRepository.register(user);
+        User secondUser = new User(userID, "Jill", "Patrik", new EGN("34572"), 34);
+        userRepository.register(secondUser);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void insertUserWithoutId() {
+        User user = new User(null, "Petar", "Petrov", new EGN("5324"), 23);
+        userRepository.register(user);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void insertUserWithoutEgn() {
+        User user = new User(new ID(1), "Petar", "Petrov", null, 23);
+        userRepository.register(user);
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void insertUserWithoutName() {
+        User user = new User(new ID(1), null, "Petrov", new EGN("76"), 23);
+        userRepository.register(user);
     }
 
     @Test
@@ -88,7 +106,7 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test(expected = ExecutionException.class)
-    public void findUnregisteredUserById(){
+    public void findUnregisteredUserById() {
         User john = userRepository.findBy(new ID(1));
     }
 
@@ -98,7 +116,7 @@ public class PersistentUserRepositoryTest {
 
 
     @Test(expected = ExecutionException.class)
-    public void findUnregisteredUserByEgn(){
+    public void findUnregisteredUserByEgn() {
         User john = userRepository.findBy(new EGN("2452445"));
     }
 
@@ -116,11 +134,20 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test(expected = ExecutionException.class)
-    public void updateUnregisteredUser(){
+    public void updateUnregisteredUser() {
         ID jackId = new ID(1);
         EGN jackEgn = new EGN("5432345");
         User jack = new User(jackId, "Jack", "Sparrow", jackEgn, 40);
         userRepository.update(jack);
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void updateUserWithoutName() {
+        ID nikolasId = new ID(1);
+        User nikola = new User(nikolasId, "Nikola", "Nikolov", new EGN("34"), 12);
+        userRepository.register(nikola);
+        User updatedNikola = new User(nikolasId, null, "Nikolov", new EGN("23"), 25);
+        userRepository.update(updatedNikola);
     }
 
     @Test(expected = ExecutionException.class)
@@ -135,22 +162,9 @@ public class PersistentUserRepositoryTest {
     }
 
     @Test(expected = ExecutionException.class)
-    public void deleteUnregisteredUser(){
+    public void deleteUnregisteredUser() {
         userRepository.delete(new ID(1));
     }
 
-    @Test(expected = ExecutionException.class)
-    public void insertUserWithoutName() {
-        User petar = new User(new ID(1), null, "Petrov", new EGN("76"), 23);
-        userRepository.register(petar);
-    }
 
-    @Test(expected = ExecutionException.class)
-    public void updateUserWithoutName() {
-        ID nikolasId = new ID(1);
-        User nikola = new User(nikolasId, "Nikola", "Nikolov", new EGN("34"), 12);
-        userRepository.register(nikola);
-        User updatedNikola = new User(nikolasId, null, "Nikolov", new EGN("23"), 25);
-        userRepository.update(updatedNikola);
-    }
 }
