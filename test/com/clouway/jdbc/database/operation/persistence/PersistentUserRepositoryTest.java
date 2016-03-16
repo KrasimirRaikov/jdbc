@@ -61,15 +61,13 @@ public class PersistentUserRepositoryTest {
 
         userRepository.register(user);
 
-        User returnedUser = userRepository.findBy(userId);
+        User returnedUser = userRepository.findById(userId);
         assertThat(returnedUser, is(equalTo(user)));
     }
 
     @Test
     public void insertAnotherUser() {
-        Long userId = 1L;
-        String userEgn = "784956";
-        User user = new User(userId, "Petar", "Pan", userEgn, 76);
+        User user = new User(1L, "Petar", "Pan","784956", 76);
 
         context.checking(new Expectations() {{
             oneOf(validator).isValid(user);
@@ -78,7 +76,7 @@ public class PersistentUserRepositoryTest {
 
         userRepository.register(user);
 
-        User returnedUser = userRepository.findBy(userId);
+        User returnedUser = userRepository.findById(1L);
         assertThat(returnedUser, is(equalTo(user)));
     }
 
@@ -143,13 +141,13 @@ public class PersistentUserRepositoryTest {
         }});
 
         userRepository.register(user);
-        User userReturned = userRepository.findBy(userEgn);
+        User userReturned = userRepository.findByEgn(userEgn);
         assertThat(userReturned, is(equalTo(user)));
     }
 
     @Test(expected = ExecutionException.class)
     public void findUnregisteredUserById() {
-        User user = userRepository.findBy(1L);
+        User user = userRepository.findById(1L);
     }
 
     @Test
@@ -165,7 +163,7 @@ public class PersistentUserRepositoryTest {
             will(returnValue(true));
         }});
         userRepository.register(user);
-        User userReturned = userRepository.findBy("2452445");
+        User userReturned = userRepository.findByEgn("2452445");
     }
 
     @Test(expected = ExecutionException.class)
@@ -175,7 +173,7 @@ public class PersistentUserRepositoryTest {
             oneOf(validator).isValid(user);
         }});
         userRepository.register(user);
-        userRepository.findBy("");
+        userRepository.findByEgn("");
     }
 
     @Test
@@ -195,7 +193,7 @@ public class PersistentUserRepositoryTest {
         userRepository.register(user);
         userRepository.update(updatedUser);
 
-        User userActual = userRepository.findBy(userId);
+        User userActual = userRepository.findById(userId);
         assertThat(userActual.lastName, is(equalTo(newSurname)));
     }
 
@@ -271,7 +269,7 @@ public class PersistentUserRepositoryTest {
         userRepository.register(user);
         userRepository.delete(userId);
 
-        userRepository.findBy(userId);
+        userRepository.findById(userId);
     }
 
     @Test(expected = ExecutionException.class)

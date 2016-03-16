@@ -51,7 +51,7 @@ public class PersistentUserRepository implements UserRepository {
     }
 
     @Override
-    public User findBy(Long id) {
+    public User findById(Long id) {
         String selectById = "SELECT * FROM users WHERE id=?;";
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -62,9 +62,9 @@ public class PersistentUserRepository implements UserRepository {
             resultSet = preparedStatement.executeQuery();
 
             resultSet.next();
-            long userId = resultSet.getLong("id");
+            Long userId = resultSet.getLong("id");
             String name = resultSet.getString("name");
-            String surname = resultSet.getString("lastName");
+            String surname = resultSet.getString("last_name");
             String egn = resultSet.getString("egn");
             int age = resultSet.getInt("age");
             return new User(userId, name, surname, egn, age);
@@ -89,7 +89,7 @@ public class PersistentUserRepository implements UserRepository {
     }
 
     @Override
-    public User findBy(String egn) {
+    public User findByEgn(String egn) {
         String sqlStatement = "SELECT * FROM users WHERE egn=?;";
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -100,7 +100,7 @@ public class PersistentUserRepository implements UserRepository {
             resultSet.next();
             long userId = resultSet.getLong("id");
             String name = resultSet.getString("name");
-            String surname = resultSet.getString("lastName");
+            String surname = resultSet.getString("last_name");
             String egnReturned = resultSet.getString("egn");
             int age = resultSet.getInt("age");
             return new User(userId, name, surname, egnReturned, age);
@@ -131,7 +131,7 @@ public class PersistentUserRepository implements UserRepository {
         if (!validator.isValid(user)) {
             throw new ExecutionException("unvalid user");
         }
-        String sqlStatement = "UPDATE users SET name=?, surname=?, egn=?, age=? WHERE id=?";
+        String sqlStatement = "UPDATE users SET name=?, last_name=?, egn=?, age=? WHERE id=?";
         PreparedStatement preparedStatement = null;
         try {
             preparedStatement = connection.prepareStatement(sqlStatement);
