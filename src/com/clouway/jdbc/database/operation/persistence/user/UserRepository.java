@@ -6,11 +6,11 @@ package com.clouway.jdbc.database.operation.persistence.user;
 public interface UserRepository {
     void register(User user);
 
-    User findBy(ID id);
+    User findBy(Long id);
 
-    User findBy(EGN egn);
+    User findBy(String egn);
 
     void update(User user);
 
-    void delete(ID id);
+    void delete(Long id);
 }

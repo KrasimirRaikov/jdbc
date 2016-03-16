@@ -3,12 +3,14 @@ package com.clouway.jdbc.database.operation.persistence;
 import com.clouway.jdbc.ConnectionManager;
 import com.clouway.jdbc.DatabaseTableTool;
 import com.clouway.jdbc.ExecutionException;
-import com.clouway.jdbc.database.operation.persistence.user.EGN;
-import com.clouway.jdbc.database.operation.persistence.user.ID;
 import com.clouway.jdbc.database.operation.persistence.user.PersistentUserRepository;
 import com.clouway.jdbc.database.operation.persistence.user.User;
+import org.jmock.Expectations;
+import org.jmock.auto.Mock;
+import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -22,15 +24,21 @@ import static org.junit.Assert.assertThat;
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)
  */
 public class PersistentUserRepositoryTest {
-    Connection connection = null;
-    PersistentUserRepository userRepository = null;
+    private Connection connection;
+    private PersistentUserRepository userRepository;
+
+    @Rule
+    public JUnitRuleMockery context = new JUnitRuleMockery();
+
+    @Mock
+    Validator validator;
 
 
     @Before
     public void setUp() {
         ConnectionManager connectionManager = new ConnectionManager();
         connection = connectionManager.getConnection("users", "postgres", "clouway.com");
-        userRepository = new PersistentUserRepository(connection);
+        userRepository = new PersistentUserRepository(connection, validator);
     }
 
     @After
@@ -42,64 +50,98 @@ public class PersistentUserRepositoryTest {
 
     @Test
     public void insertUser() {
-        ID userId = new ID(1);
-        EGN userEgn = new EGN("9012122440");
+        Long userId = 1L;
+        String userEgn = "9012122440";
         User user = new User(userId, "John", "Selivan", userEgn, 26);
 
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+        }});
+
         userRepository.register(user);
+
         User returnedUser = userRepository.findBy(userId);
         assertThat(returnedUser, is(equalTo(user)));
     }
 
     @Test
-    public void insertAnotherUsers() {
-        ID userId = new ID(1);
-        EGN userEgn = new EGN("1234");
-        User user = new User(userId, "Mark", "Zukerberg", userEgn, 30);
-        ID secondUserId = new ID(2);
-        EGN secondUserEgn = new EGN("763");
-        User secondUser = new User(secondUserId, "Willy", "Ban", secondUserEgn, 31);
+    public void insertAnotherUser() {
+        Long userId = 1L;
+        String userEgn = "784956";
+        User user = new User(userId, "Petar", "Pan", userEgn, 76);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+        }});
 
         userRepository.register(user);
-        userRepository.register(secondUser);
-        User userActual = userRepository.findBy(userId);
-        User secondUserActual = userRepository.findBy(secondUserId);
-        assertThat(userActual, is(equalTo(user)));
-        assertThat(secondUserActual, is(equalTo(secondUser)));
+
+        User returnedUser = userRepository.findBy(userId);
+        assertThat(returnedUser, is(equalTo(user)));
     }
 
     @Test(expected = ExecutionException.class)
     public void insertExistingUser() {
-        ID userID = new ID(1);
-        User user = new User(userID, "John", "Selivan", new EGN("456"), 32);
+        Long userID = 1L;
+        User user = new User(userID, "John", "Selivan", "456", 32);
+
+        User secondUser = new User(userID, "Jill", "Patrik", "34572", 34);
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+            oneOf(validator).isValid(secondUser);
+            will(returnValue(true));
+        }});
         userRepository.register(user);
-        User secondUser = new User(userID, "Jill", "Patrik", new EGN("34572"), 34);
+
         userRepository.register(secondUser);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = ExecutionException.class)
     public void insertUserWithoutId() {
-        User user = new User(null, "Petar", "Petrov", new EGN("5324"), 23);
+        User user = new User(null, "Petar", "Petrov", "5324", 23);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(false));
+        }});
         userRepository.register(user);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = ExecutionException.class)
     public void insertUserWithoutEgn() {
-        User user = new User(new ID(1), "Petar", "Petrov", null, 23);
+        User user = new User(1L, "Petar", "Petrov", null, 23);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(false));
+        }});
         userRepository.register(user);
     }
 
     @Test(expected = ExecutionException.class)
     public void insertUserWithoutName() {
-        User user = new User(new ID(1), null, "Petrov", new EGN("76"), 23);
+        User user = new User(1L, null, "Petrov", "76", 23);
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(false));
+        }});
         userRepository.register(user);
     }
 
     @Test
     public void findUserByEgn() {
-        ID userID = new ID(1);
-        EGN userEgn = new EGN("1234");
+        Long userID = 1L;
+        String userEgn = "1234";
         User user = new User(userID, "Mark", "Zukerberg", userEgn, 30);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+        }});
+
         userRepository.register(user);
         User userReturned = userRepository.findBy(userEgn);
         assertThat(userReturned, is(equalTo(user)));
@@ -107,7 +149,7 @@ public class PersistentUserRepositoryTest {
 
     @Test(expected = ExecutionException.class)
     public void findUnregisteredUserById() {
-        User user = userRepository.findBy(new ID(1));
+        User user = userRepository.findBy(1L);
     }
 
     @Test
@@ -117,60 +159,115 @@ public class PersistentUserRepositoryTest {
 
     @Test(expected = ExecutionException.class)
     public void findUnregisteredUserByEgn() {
-        User user = userRepository.findBy(new EGN("2452445"));
+        User user = new User(1L, "Marty", "Milk", "345", 23);
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+        }});
+        userRepository.register(user);
+        User userReturned = userRepository.findBy("2452445");
+    }
+
+    @Test(expected = ExecutionException.class)
+    public void findUserWithEmptyEgn() {
+        User user = new User(1L, "Pall", "Mall", "2456", 22);
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+        }});
+        userRepository.register(user);
+        userRepository.findBy("");
     }
 
     @Test
     public void updateUser() {
-        ID userId = new ID(1);
-        EGN userEgn = new EGN("324589");
+        Long userId = 1L;
+        String userEgn = "324589";
         User user = new User(userId, "Lucia", "Kalucio", userEgn, 25);
-        userRepository.register(user);
         String newSurname = "Topoli";
         User updatedUser = new User(user.id, user.name, newSurname, user.egn, user.age);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+            oneOf(validator).isValid(updatedUser);
+            will(returnValue(true));
+        }});
+        userRepository.register(user);
         userRepository.update(updatedUser);
+
         User userActual = userRepository.findBy(userId);
-        assertThat(userActual.surname, is(equalTo(newSurname)));
+        assertThat(userActual.lastName, is(equalTo(newSurname)));
     }
 
     @Test(expected = ExecutionException.class)
     public void updateUnregisteredUser() {
-        ID userId = new ID(1);
-        EGN userEgn = new EGN("5432345");
-        User user = new User(userId, "Jack", "Sparrow", userEgn, 40);
+        User user = new User(1L, "Jack", "Sparrow", "5432345", 40);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+        }});
+
         userRepository.update(user);
     }
 
     @Test(expected = ExecutionException.class)
     public void updateUserWithoutName() {
-        ID userId = new ID(1);
-        User user = new User(userId, "Nikola", "Nikolov", new EGN("34"), 12);
+        Long userId = 1L;
+        User user = new User(userId, "Nikola", "Nikolov", "34", 12);
+        User updatedUser = new User(userId, null, "Nikolov", "23", 25);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+            oneOf(validator).isValid(updatedUser);
+            will(returnValue(false));
+        }});
         userRepository.register(user);
-        User updatedUser = new User(userId, null, "Nikolov", new EGN("23"), 25);
         userRepository.update(updatedUser);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = ExecutionException.class)
     public void updateUserWithoutId() {
-        User user = new User(new ID(1), "Kala", "Kalchev", new EGN("34"), 23);
+        User user = new User(1L, "Kala", "Kalchev", "34", 23);
+
+        User updateUser = new User(null, "Kala", "Kalchev", "45", 3);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+            oneOf(validator).isValid(updateUser);
+            will(returnValue(false));
+        }});
         userRepository.register(user);
-        User updateUser = new User(null, "Kala", "Kalchev", new EGN("45"), 3);
+
         userRepository.update(updateUser);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = ExecutionException.class)
     public void updateUserWithoutEgn() {
-        User user = new User(new ID(1), "Kala", "Kalchev", new EGN("34"), 23);
+        User user = new User(1L, "Kala", "Kalchev", "34", 23);
+        User updateUser = new User(1L, "Kala", "Kalchev", null, 3);
+
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+            oneOf(validator).isValid(updateUser);
+            will(returnValue(false));
+        }});
         userRepository.register(user);
-        User updateUser = new User(new ID(1), "Kala", "Kalchev", null, 3);
         userRepository.update(updateUser);
     }
 
     @Test(expected = ExecutionException.class)
     public void deleteUser() {
-        ID userId = new ID(1);
-        EGN userEgn = new EGN("9012122440");
+        Long userId = 1L;
+        String userEgn = "9012122440";
         User user = new User(userId, "John", "Selivan", userEgn, 26);
+        context.checking(new Expectations() {{
+            oneOf(validator).isValid(user);
+            will(returnValue(true));
+        }});
         userRepository.register(user);
         userRepository.delete(userId);
 
@@ -179,7 +276,7 @@ public class PersistentUserRepositoryTest {
 
     @Test(expected = ExecutionException.class)
     public void deleteUnregisteredUser() {
-        userRepository.delete(new ID(1));
+        userRepository.delete(1L);
     }
 
 
