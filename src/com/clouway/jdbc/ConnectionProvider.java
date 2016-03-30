@@ -7,9 +7,8 @@ import java.sql.SQLException;
 /**
  * @author Krasimir Raikov(raikov.krasimir@gmail.com)
  */
-public class ConnectionManager {
-
-    public Connection getConnection(String database, String username, String password) {
+public class ConnectionProvider {
+    public static Connection getConnection(String database, String username, String password) {
         try {
             return DriverManager.getConnection("jdbc:postgresql://localhost/" + database, username, password);
         } catch (SQLException e) {
